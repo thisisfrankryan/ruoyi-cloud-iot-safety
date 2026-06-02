@@ -1,0 +1,21 @@
+# Tomcat
+server:
+  port: 9800
+
+# Spring
+spring:
+  application:
+    name: ruoyi-modules-iot
+  profiles:
+    active: dev
+  cloud:
+    nacos:
+      discovery:
+        # Nacos服务注册和发现
+        server-addr: 127.0.0.1:8848
+      config:
+        # Nacos配置中心
+        server-addr: 127.0.0.1:8848
+        file-extension: yml
+        shared-configs:
+          - application-${spring.profiles.active}.${spring.cloud.nacos.config.file-extension}

@@ -1,0 +1,39 @@
+# =========================================================================
+# 工业级 .gitignore 赛博滤网 (已优化本地数据库数据拦截)
+# =========================================================================
+
+# 1. 编译构建与二进制包拦截
+target/
+*.jar
+*.war
+build/
+dist/
+node_modules/
+
+# 2. 本地集装箱数据、日志及运行时临时文件拦截
+docker/*/data/
+docker/*/logs/
+docker/mysql/data/
+docker/redis/data/
+docker/nacos/logs/
+
+# 3. IDE 缓存与编辑器配置文件拦截
+.idea/
+*.iws
+*.iml
+*.ipr
+.vscode/
+.classpath
+.project
+.settings/
+.apt_generated/
+.factorypath/
+.springBeans
+
+# 4. 操作系统及本地临时配置拦截
+.DS_Store
+*.log
+*.swp
+*.xml.versionsBackup
+rebel.xml
+nbproject/private/

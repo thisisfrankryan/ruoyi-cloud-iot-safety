@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>若依管理系统 - 登录</title>
+  <!-- Google Fonts & Element Plus CSS CDN -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
+  <style>
+    /* =========================================================================
+       1. 登录页面样式表 (RuoYi Classic Login Visuals)
+       ========================================================================= */
+    body {
+      margin: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-image: url('https://preview.pro.ant.design/assets/background.3d3c6c30.svg');
+      background-size: cover;
+      background-color: #f0f2f5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .login-container {
+      display: flex;
+      flex: 1;
+      justify-content: center;
+      align-items: center;
+      padding: 40px 0;
+    }
+
+    .login-card {
+      width: 400px;
+      background: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+      border: 1px solid #e8e8e8;
+      overflow: hidden;
+    }
+
+    .login-header {
+      padding: 32px 32px 10px;
+      text-align: center;
+    }
+
+    .login-title {
+      font-size: 20px;
+      color: #333333;
+      font-weight: 700;
+      margin: 0 0 8px;
+      letter-spacing: 0.5px;
+    }
+
+    .login-subtitle {
+      font-size: 13px;
+      color: #777777;
+      margin: 0;
+    }
+
+    .login-form {
+      padding: 10px 32px 32px;
+    }
+
+    .captcha-container {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .captcha-img {
+      height: 38px;
+      width: 110px;
+      flex-shrink: 0; /* 阻止 Flexbox 将验证码区域压缩至 0px 宽度 */
+      background-color: #eef2f6;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Courier New', Courier, monospace;
+      font-weight: bold;
+      color: #1890ff;
+      font-size: 18px;
+      letter-spacing: 3px;
+      cursor: pointer;
+      user-select: none;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .login-btn {
+      width: 100%;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 600;
+      background-color: #1890ff;
+      border-color: #1890ff;
+    }
+
+    .login-btn:hover {
+      background-color: #40a9ff;
+      border-color: #40a9ff;
+    }
+
+    /* =========================================================================
+       2. 后台管理面板样式表 (RuoYi Admin Workspace Visuals)
+       ========================================================================= */
+    .admin-layout {
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+      width: 100vw;
+    }
+
+    /* 侧边菜单栏：若依标志性深色调 */
+    .sidebar {
+      width: 240px;
+      background-color: #304156;
+      color: #bfcbd9;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      box-shadow: 2px 0 6px rgba(0, 21, 41, 0.35);
+      z-index: 100;
+    }
+
+    .brand-logo {
+      height: 50px;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      background-color: #2b2f3a;
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 16px;
+      gap: 10px;
+    }
+
+    .menu-list {
+      flex: 1;
+      overflow-y: auto;
+      padding-top: 15px;
+    }
+
+    .menu-item {
+      height: 48px;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      cursor: pointer;
+      font-size: 14px;
+      gap: 12px;
+      transition: all 0.3s;
+    }
+
+    .menu-item:hover {
+      color: #ffffff;
+      background-color: #263445;
+    }
+
+    .menu-item.active {
+      color: #409eff;
+      background-color: #1f2d3d;
+    }
+
+    .submenu-item {
+      padding-left: 45px !important;
+      font-size: 13px;
+    }
+
+    /* 主工作区 */
+    .main-workspace {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background-color: #f0f2f5;
+      overflow: hidden;
+    }
+
+    /* 顶部导航头 */
+    .navbar {
+      height: 50px;
+      background-color: #ffffff;
+      box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      flex-shrink: 0;
+    }
+
+    .navbar-left {
+      display: flex;
+      align-items: center;
+      font-size: 14px;
+      color: #606266;
+    }
+
+    .navbar-right {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .user-avatar-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+
+    .avatar-img {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background-color: #409eff;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 13px;
+    }
+
+    /* 工作台页面内容 */
+    .content-panel {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      box-sizing: border-box;
+    }
+
+    .breadcrumb-title {
+      font-weight: 600;
+      color: #303133;
+    }
+
+    /* 数据表格与卡片式面板 */
+    .ruoyi-card {
+      background-color: #ffffff;
+      border-radius: 4px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e6ebf5;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .toolbar-actions {
+      margin-bottom: 15px;
+      display: flex;
+      gap: 10px;
+    }
+
+    /* =========================================================================
+       3. 核心：代码生成复印机效果样式
+       ========================================================================= */
+    .photocopier-dialog .el-dialog__body {
+      padding: 10px 20px;
+    }
+
+    .code-container {
+      background-color: #1e1e1e;
+      color: #d4d4d4;
+      border-radius: 8px;
+      padding: 18px;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      overflow: auto;
+      max-height: 450px;
+      border: 1px solid #333333;
+      margin-top: 10px;
+    }
+
+    .code-title-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 12px;
+      background-color: #2d2d2d;
+      border-top-left-radius: 8px;
+      border-top-right-radius: 8px;
+      border-bottom: 1px solid #444;
+      font-size: 12px;
+      color: #aaa;
+    }
+
+    .photocopying-animation {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 0;
+    }
+
+    .scanner-beam {
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, transparent, #409eff, transparent);
+      box-shadow: 0 0 12px #409eff;
+      animation: scanEffect 1.5s infinite ease-in-out;
+    }
+
+    @keyframes scanEffect {
+      0% { transform: translateY(0); }
+      50% { transform: translateY(80px); }
+      100% { transform: translateY(0); }
+    }
+
+    /* 4K 大屏内嵌自适应 */
+    .embedded-dashboard {
+      width: 100%;
+      height: 700px;
+      border: none;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <!-- =======================================================================
+         模块一：RuoYi 标志性登录大页面 (Login Screen)
+         ======================================================================= -->
+    <div v-if="!isLoggedIn" class="login-container">
+      <div class="login-card">
+        <div class="login-header">
+          <h2 class="login-title">RuoYi Cloud 管理系统</h2>
+          <p class="login-subtitle">物联网溺水安全监控总控制台管理处</p>
+        </div>
+        <div class="login-form">
+          <el-form :model="loginForm" label-position="top">
+            <el-form-item label="账号">
+              <el-input v-model="loginForm.username" placeholder="请输入管理员账号 admin" prefix-icon="User" />
+            </el-form-item>
+            <el-form-item label="密码">
+              <el-input v-model="loginForm.password" type="password" placeholder="请输入密码 admin123" prefix-icon="Lock" show-password />
+            </el-form-item>
+
+            <el-form-item>
+              <el-checkbox v-model="loginForm.rememberMe">记住密码</el-checkbox>
+            </el-form-item>
+            <el-form-item style="margin-bottom: 0;">
+              <el-button type="primary" class="login-btn" @click="handleLogin" :loading="loginLoading">
+                登 录
+              </el-button>
+            </el-form-item>
+          </el-form>
+        </div>
+      </div>
+    </div>
+
+    <!-- =======================================================================
+         模块二：RuoYi 后台控制工作区 (Admin Layout)
+         ======================================================================= -->
+    <div v-else class="admin-layout">
+      <!-- 1. 左侧导航菜单 -->
+      <aside class="sidebar">
+        <div class="brand-logo">
+          <span style="font-size: 18px;">🛡️</span>
+          <span>RuoYi Cloud 3.x</span>
+        </div>
+        <div class="menu-list">
+          <div :class="['menu-item', currentTab === 'home' ? 'active' : '']" @click="switchTab('home')">
+            <span>🏠</span> 首页
+          </div>
+
+          <!-- 系统管理大类 -->
+          <div class="menu-item" style="color: #607d8b; font-weight: bold; font-size: 11px; letter-spacing: 1.5px; height: 35px; padding-top: 15px; cursor: default;">
+            SYSTEM CORES
+          </div>
+          <div :class="['menu-item', 'submenu-item', currentTab === 'user' ? 'active' : '']" @click="switchTab('user')">
+            👤 用户管理
+          </div>
+          <div :class="['menu-item', 'submenu-item', currentTab === 'role' ? 'active' : '']" @click="switchTab('role')">
+            🛡️ 角色管理
+          </div>
+          <div :class="['menu-item', 'submenu-item', currentTab === 'menu' ? 'active' : '']" @click="switchTab('menu')">
+            📋 菜单管理
+          </div>
+
+          <!-- 核心：大屏视图 -->
+          <div class="menu-item" style="color: #607d8b; font-weight: bold; font-size: 11px; letter-spacing: 1.5px; height: 35px; padding-top: 15px; cursor: default;">
+            IOT MONITOR
+          </div>
+          <div 
+            v-for="m in mountedMenus" 
+            :key="m.id" 
+            :class="['menu-item', currentTab === m.tabName ? 'active' : '']" 
+            @click="switchTab(m.tabName)"
+          >
+            📺 {{ m.menuName }}
+          </div>
+
+          <!-- 系统工具大类 -->
+          <div class="menu-item" style="color: #607d8b; font-weight: bold; font-size: 11px; letter-spacing: 1.5px; height: 35px; padding-top: 15px; cursor: default;">
+            CORE TOOLS
+          </div>
+          <div :class="['menu-item', 'submenu-item', currentTab === 'codegen' ? 'active' : '']" @click="switchTab('codegen')">
+            🖨️ 代码生成复印机
+          </div>
+        </div>
+      </aside>
+
+      <!-- 2. 主体区 -->
+      <main class="main-workspace">
+        <!-- 顶部导航头 -->
+        <header class="navbar">
+          <div class="navbar-left">
+            <el-breadcrumb separator="/">
+              <el-breadcrumb-item>总办公室</el-breadcrumb-item>
+              <el-breadcrumb-item><span class="breadcrumb-title">{{ getTabTitle() }}</span></el-breadcrumb-item>
+            </el-breadcrumb>
+          </div>
+          <div class="navbar-right">
+            <el-tag size="small" type="success" effect="dark">Nacos 在线</el-tag>
+            <div class="user-avatar-badge" @click="handleLogout" title="点击注销退出">
+              <div class="avatar-img">AD</div>
+              <span style="font-size: 14px; font-weight: bold; color: #333;">admin</span>
+              <span style="font-size: 12px; color: #888;">[退出]</span>
+            </div>
+          </div>
+        </header>
+
+        <!-- 3. 工作页面区域 -->
+        <section class="content-panel">
+
+          <!-- A. 首页大盘 -->
+          <div v-if="currentTab === 'home'">
+            <div class="ruoyi-card">
+              <h2 style="margin-top: 0; color: #1890ff;">👋 欢迎进入若依微服务系统园区总管理处</h2>
+              <p style="color: #666; line-height: 1.6;">
+                本套系统目前成功托管了水下通信与安全报警科技公司的核心资产。通过标准的 Nacos 服务注册中心、网关熔断和高频 MQ 削峰缓冲带，实现了数万台传感器高频报文吞吐的绝对稳妥。
+              </p>
+              <el-row :gutter="20" style="margin-top: 30px;">
+                <el-col :span="8">
+                  <el-statistic title="在线监控传感器 (物理)" :value="23542" />
+                </el-col>
+                <el-col :span="8">
+                  <el-statistic title="今日高频吞吐总量" :value="4859385" />
+                </el-col>
+                <el-col :span="8">
+                  <el-statistic title="系统微服务可用性" value="99.999" suffix="%" />
+                </el-col>
+              </el-row>
+            </div>
+          </div>
+
+          <!-- B. 用户管理 (救生员账号控制) -->
+          <div v-if="currentTab === 'user'">
+            <div class="ruoyi-card">
+              <div class="toolbar-actions">
+                <el-button type="primary" icon="Plus" @click="handleCreateUser">新增救生员账号</el-button>
+                <el-button type="success" icon="Edit" plain>批量修改</el-button>
+                <el-button type="danger" icon="Delete" plain>批量删除</el-button>
+              </div>
+              <el-table :data="users" style="width: 100%" border>
+                <el-table-column prop="userId" label="用户编号" width="100" align="center"></el-table-column>
+                <el-table-column prop="username" label="登录账号" align="center"></el-table-column>
+                <el-table-column prop="nickName" label="救生员姓名" align="center"></el-table-column>
+                <el-table-column prop="phonenumber" label="手机号码" align="center"></el-table-column>
+                <el-table-column label="账号状态" align="center" width="120">
+                  <template #default="scope">
+                    <el-switch v-model="scope.row.status" :active-value="0" :inactive-value="1" active-text="正常" inactive-text="停用" inline-prompt></el-switch>
+                  </template>
+                </el-table-column>
+                <el-table-column prop="createTime" label="创建时间" align="center"></el-table-column>
+                <el-table-column label="操作" align="center" width="180">
+                  <template #default="scope">
+                    <el-button type="primary" size="small" link icon="Edit">修改</el-button>
+                    <el-button type="danger" size="small" link icon="Delete">删除</el-button>
+                  </template>
+                </el-table-column>
+              </el-table>
+            </div>
+          </div>
+
+          <!-- C. 角色管理 (谁能看监控、谁不能看) -->
+          <div v-if="currentTab === 'role'">
+            <div class="ruoyi-card">
+              <div class="toolbar-actions">
+                <el-button type="primary" icon="Plus">新增角色</el-button>
+              </div>
+              <el-table :data="roles" style="width: 100%" border>
+                <el-table-column prop="roleId" label="角色编号" width="100" align="center"></el-table-column>
+                <el-table-column prop="roleName" label="角色名称" align="center"></el-table-column>
+                <el-table-column prop="roleKey" label="权限字符" align="center"></el-table-column>
+                <el-table-column prop="roleSort" label="显示顺序" width="100" align="center"></el-table-column>
+                <el-table-column label="角色状态" align="center" width="120">
+                  <template #default="scope">
+                    <el-tag :type="scope.row.status === 0 ? 'success' : 'danger'">
+                      {{ scope.row.status === 0 ? '启用' : '禁用' }}
+                    </el-tag>
+                  </template>
+                </el-table-column>
+                <el-table-column label="菜单权限授权范围" align="center">
+                  <template #default="scope">
+                    <el-tooltip content="点击查看/配置权限范围树" placement="top">
+                      <el-button type="primary" link icon="Setting" @click="handleEditRolePermission(scope.row)">
+                        {{ scope.row.roleId === 2 ? '🔒 仅限大屏查阅 (iot:alarm:list)' : '🔓 全局资产通控权限 (*:*:*)' }}
+                      </el-button>
+                    </el-tooltip>
+                  </template>
+                </el-table-column>
+                <el-table-column label="操作" align="center" width="180">
+                  <template #default="scope">
+                    <el-button type="primary" size="small" link icon="Edit">修改</el-button>
+                    <el-button type="danger" size="small" link icon="Delete">删除</el-button>
+                  </template>
+                </el-table-column>
+              </el-table>
+            </div>
+          </div>
+
+          <!-- D. 4K 溺水安全总控大屏内嵌 & 动态大屏挂载支持 -->
+          <div v-if="currentTab === 'dashboard' || currentTab.startsWith('custom-tab-')">
+            <iframe src="/index.html" class="embedded-dashboard"></iframe>
+          </div>
+
+          <!-- H. 菜单管理 (老板夏总监指定挂载处) -->
+          <div v-if="currentTab === 'menu'">
+            <div class="ruoyi-card">
+              <div class="toolbar-actions">
+                <el-button type="primary" icon="Plus" @click="menuDialogVisible = true">新增菜单</el-button>
+                <el-button type="success" icon="Refresh" plain @click="ElementPlus.ElMessage.info('菜单树缓存已重置为最新快照！')">重置缓存</el-button>
+              </div>
+              <el-table :data="menusTableList" style="width: 100%" border>
+                <el-table-column prop="id" label="菜单编号" width="100" align="center"></el-table-column>
+                <el-table-column prop="menuName" label="菜单名称" align="center"></el-table-column>
+                <el-table-column prop="path" label="路由地址" align="center"></el-table-column>
+                <el-table-column prop="component" label="组件路径" align="center"></el-table-column>
+                <el-table-column prop="type" label="类型" width="100" align="center">
+                  <template #default="scope">
+                    <el-tag :type="scope.row.type === 'M' ? 'primary' : 'success'">
+                      {{ scope.row.type === 'M' ? '目录' : '菜单' }}
+                    </el-tag>
+                  </template>
+                </el-table-column>
+                <el-table-column label="操作" align="center" width="180">
+                  <template #default="scope">
+                    <el-button type="primary" size="small" link icon="Edit">修改</el-button>
+                    <el-button type="danger" size="small" link icon="Delete">删除</el-button>
+                  </template>
+                </el-table-column>
+              </el-table>
+            </div>
+          </div>
+
+          <!-- E. 代码生成复印机 (RuoYi Codegen) -->
+          <div v-if="currentTab === 'codegen'">
+            <div class="ruoyi-card">
+              <h3 style="margin-top: 0; color: #1890ff;">🖨️ 鼠标点一下自动生成代码的“复印机”</h3>
+              <p style="color: #666; font-size: 13px;">
+                读取数据库表结构，瞬间秒级打印全套 Spring Boot Java 实体类、XML 映射、MyBatis 接口及 Vue3 前端大屏卡片页面。
+              </p>
+              <el-table :data="dbTables" style="width: 100%" border>
+                <el-table-column prop="tableName" label="表名称" align="center"></el-table-column>
+                <el-table-column prop="tableComment" label="表描述" align="center"></el-table-column>
+                <el-table-column prop="className" label="实体类名称" align="center"></el-table-column>
+                <el-table-column prop="createTime" label="同步建表时间" align="center"></el-table-column>
+                <el-table-column label="操作" align="center" width="280">
+                  <template #default="scope">
+                    <el-button type="warning" size="small" icon="View" @click="handlePreviewCode(scope.row)">预览代码</el-button>
+                    <el-button type="primary" size="small" icon="Download" @click="handleGenerateCode(scope.row)">生成代码</el-button>
+                  </template>
+                </el-table-column>
+              </el-table>
+            </div>
+          </div>
+
+        </section>
+      </main>
+
+      <!-- F. 复印机预览代码对话框 (Codegen Preview Dialog) -->
+      <el-dialog 
+        v-model="previewVisible" 
+        :title="'🖨️ 代码复印机自动打印预览 - ' + selectedTable.tableName" 
+        width="800px"
+        class="photocopier-dialog"
+      >
+        <div v-if="photocopying" class="photocopying-animation">
+          <el-icon class="is-loading" style="font-size: 40px; color: #409eff;"><Loading /></el-icon>
+          <div class="scanner-beam" style="margin-top: 20px;"></div>
+          <p style="color: #666; margin-top: 15px; font-weight: bold;">复印机正在全盘扫描数据库表结构，生成全套源码中...</p>
+        </div>
+        <div v-else>
+          <el-tabs v-model="activeCodeTab">
+            <el-tab-pane label="DomainEntity.java" name="domain">
+              <div class="code-title-bar">
+                <span>java/com/ruoyi/iot/domain/SysDeviceAlarmData.java</span>
+                <el-button size="small" type="primary" link @click="copyCode">复制源码</el-button>
+              </div>
+              <pre class="code-container"><code>package com.ruoyi.iot.domain;
+
+import lombok.Data;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+@Data
+public class SysDeviceAlarmData {
+    private Long id;
+    private String deviceCode;
+    private BigDecimal waterDepth;
+    private Integer status;
+    private Integer battery;
+    private LocalDateTime reportTime;
+}</code></pre>
+            </el-tab-pane>
+            <el-tab-pane label="MapperXML.xml" name="xml">
+              <div class="code-title-bar">
+                <span>resources/mapper/iot/SysDeviceAlarmDataMapper.xml</span>
+                <el-button size="small" type="primary" link @click="copyCode">复制源码</el-button>
+              </div>
+              <pre class="code-container"><code>&lt;?xml version="1.0" encoding="UTF-8" ?&gt;
+&lt;!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd"&gt;
+&lt;mapper namespace="com.ruoyi.iot.mapper.SysDeviceAlarmDataMapper"&gt;
+    &lt;select id="selectHistoryByRange" resultMap="SysDeviceAlarmDataResult"&gt;
+        select id, device_code, water_depth, status, battery, report_time 
+        from sys_device_alarm_data
+        where device_code = #{deviceCode} 
+          and report_time &gt;= #{beginTime} 
+          and report_time &lt;= #{endTime}
+    &lt;/select&gt;
+&lt;/mapper&gt;</code></pre>
+            </el-tab-pane>
+          </el-tabs>
+        </div>
+      </el-dialog>
+
+      <!-- G. 权限配置弹窗 -->
+      <el-dialog v-model="rolePermissionVisible" title="🔒 菜单与权限边界配置树" width="500px">
+        <el-tree
+          :data="menuTreeData"
+          show-checkbox
+          node-key="id"
+          :default-checked-keys="defaultCheckedKeys"
+          :props="defaultProps"
+          default-expand-all
+        />
+        <template #footer>
+          <span class="dialog-footer">
+            <el-button @click="rolePermissionVisible = false">取消</el-button>
+            <el-button type="primary" @click="saveRolePermission">保存权限</el-button>
+          </span>
+        </template>
+      </el-dialog>
+
+      <!-- I. 老板夏总监指定：新增菜单挂载弹窗 -->
+      <el-dialog v-model="menuDialogVisible" title="➕ 新增菜单挂载卡槽" width="550px">
+        <el-form :model="menuForm" label-width="100px" label-position="left">
+          <el-form-item label="菜单名称">
+            <el-input v-model="menuForm.name" placeholder="请输入：溺水安全监控总控台" />
+          </el-form-item>
+          <el-form-item label="路由地址">
+            <el-input v-model="menuForm.path" placeholder="请输入：/iot/alarm" />
+          </el-form-item>
+          <el-form-item label="组件路径">
+            <el-input v-model="menuForm.component" placeholder="请输入：iot/alarm/index" />
+          </el-form-item>
+          <el-form-item label="菜单类型">
+            <el-radio-group v-model="menuForm.type">
+              <el-radio label="M">目录</el-radio>
+              <el-radio label="C">菜单</el-radio>
+            </el-radio-group>
+          </el-form-item>
+        </el-form>
+        <template #footer>
+          <span class="dialog-footer">
+            <el-button @click="menuDialogVisible = false">取消</el-button>
+            <el-button type="primary" @click="saveMenu">确 定</el-button>
+          </span>
+        </template>
+      </el-dialog>
+    </div>
+  </div>
+
+  <!-- Import Vue 3 & Element Plus JS via CDN -->
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <script src="https://unpkg.com/element-plus"></script>
+  <!-- Element Plus Icons -->
+  <script src="https://unpkg.com/@element-plus/icons-vue"></script>
+  <script>
+    const { createApp, ref, onMounted } = Vue;
+
+    const App = {
+      setup() {
+        const isLoggedIn = ref(false);
+        const currentTab = ref('home');
+        const loginLoading = ref(false);
+        const captchaText = ref('');
+        const previewVisible = ref(false);
+        const photocopying = ref(false);
+        const activeCodeTab = ref('domain');
+        const rolePermissionVisible = ref(false);
+        const selectedTable = ref({});
+
+        const loginForm = ref({
+          username: '',
+          password: '',
+          captcha: '',
+          rememberMe: true
+        });
+
+        // 动态大屏菜单挂载列表
+        const mountedMenus = ref([
+          { id: 1, menuName: '4K 溺水安全总控大屏', tabName: 'dashboard', path: '/iot/alarm', component: 'iot/alarm/index' }
+        ]);
+
+        // 系统所有菜单展示列表
+        const menusTableList = ref([
+          { id: 1, menuName: '系统管理', path: '/system', component: 'Layout', type: 'M' },
+          { id: 2, menuName: '用户管理', path: 'user', component: 'system/user/index', type: 'C' },
+          { id: 3, menuName: '角色管理', path: 'role', component: 'system/role/index', type: 'C' },
+          { id: 4, menuName: '菜单管理', path: 'menu', component: 'system/menu/index', type: 'C' },
+          { id: 5, menuName: '4K 溺水安全总控大屏', path: '/iot/alarm', component: 'iot/alarm/index', type: 'C' }
+        ]);
+
+        const menuDialogVisible = ref(false);
+        const menuForm = ref({
+          name: '',
+          path: '',
+          component: '',
+          type: 'C'
+        });
+
+        // 随机生成四位纯数字或字母的验证码
+        const refreshCaptcha = () => {
+          const chars = '23456789ABCDEFGHJKMNPQRSTWXYZ';
+          let cap = '';
+          for (let i = 0; i < 4; i++) {
+            cap += chars.charAt(Math.floor(Math.random() * chars.length));
+          }
+          captchaText.value = cap;
+        };
+
+        // 用户登录流程
+        const handleLogin = () => {
+          if (!loginForm.value.username || !loginForm.value.password) {
+            ElementPlus.ElMessage.error('账号或密码不能为空！');
+            return;
+          }
+
+
+          loginLoading.value = true;
+          setTimeout(() => {
+            loginLoading.value = false;
+            if (loginForm.value.username === 'admin' && loginForm.value.password === 'admin123') {
+              isLoggedIn.value = true;
+              currentTab.value = 'home';
+              ElementPlus.ElNotification({
+                title: '🔑 鉴权成功',
+                message: '管理员安全接入 Nacos 微服务管控中心，已绑定超级管理员角色 (*:*:*)',
+                type: 'success',
+                duration: 4000
+              });
+            } else {
+              ElementPlus.ElMessage.error('账号或密码错误（提示：账号admin 密码admin123）');
+              refreshCaptcha();
+            }
+          }, 800);
+        };
+
+        const handleLogout = () => {
+          isLoggedIn.value = false;
+          loginForm.value.captcha = '';
+          refreshCaptcha();
+          ElementPlus.ElMessage.info('超级管理员账号已安全注销。');
+        };
+
+        const getTabTitle = () => {
+          const map = {
+            'home': '系统首页',
+            'user': '用户管理 (账户审计库)',
+            'role': '角色管理 (权限控制沙箱)',
+            'menu': '菜单管理 (系统大楼建树)',
+            'dashboard': '4K 溺水安全总控大屏',
+            'codegen': '系统工具 / 代码生成复印机'
+          };
+          
+          // 支持动态卡槽大屏标题匹配
+          if (currentTab.value.startsWith('custom-tab-')) {
+            const matched = mountedMenus.value.find(m => m.tabName === currentTab.value);
+            return matched ? matched.menuName : '安全总控制台';
+          }
+          return map[currentTab.value] || '若依管理系统';
+        };
+
+        const switchTab = (tab) => {
+          currentTab.value = tab;
+        };
+
+        // 挂载新增液晶电视大屏菜单
+        const saveMenu = () => {
+          if (!menuForm.value.name || !menuForm.value.path || !menuForm.value.component) {
+            ElementPlus.ElMessage.error('菜单名称、路由地址和组件路径必须全部填满！');
+            return;
+          }
+          
+          const newId = menusTableList.value.length + 1;
+          
+          // 1. 同步加入系统全局菜单列表
+          menusTableList.value.push({
+            id: newId,
+            menuName: menuForm.value.name,
+            path: menuForm.value.path,
+            component: menuForm.value.component,
+            type: menuForm.value.type
+          });
+          
+          // 2. 如果是菜单类型，同步挂载到大屏菜单指示列表，实现动态侧边菜单自动生成
+          if (menuForm.value.type === 'C') {
+            const newTabName = 'custom-tab-' + newId;
+            mountedMenus.value.push({
+              id: newId,
+              menuName: menuForm.value.name,
+              tabName: newTabName,
+              path: menuForm.value.path,
+              component: menuForm.value.component
+            });
+          }
+          
+          menuDialogVisible.value = false;
+          
+          // 核心：若依标志性通告
+          ElementPlus.ElNotification({
+            title: '🎉 菜单挂载成功',
+            message: '已在左侧菜单栏中动态生成“' + menuForm.value.name + '”接口通道！Vue3组件已对齐写字楼卡槽！',
+            type: 'success',
+            duration: 5000
+          });
+          
+          // 重置表单
+          menuForm.value = { name: '', path: '', component: '', type: 'C' };
+        };
+
+        // 救生员数据表
+        const users = ref([
+          { userId: 1, username: 'lifeguard_01', nickName: '张敏德 (一号滩队长)', phonenumber: '13898492049', status: 0, createTime: '2026-06-01 10:00:00' },
+          { userId: 2, username: 'lifeguard_02', nickName: '李国强 (A区浅水池监控员)', phonenumber: '13590485960', status: 0, createTime: '2026-06-01 10:05:00' },
+          { userId: 3, username: 'lifeguard_03', nickName: '王小伟 (B区深水池巡视员)', phonenumber: '13690495860', status: 1, createTime: '2026-06-01 10:12:00' }
+        ]);
+
+        const handleCreateUser = () => {
+          ElementPlus.ElMessageBox.prompt('请输入救生员姓名', '新增账号选项', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+          }).then(({ value }) => {
+            if (!value) return;
+            const newId = users.value.length + 1;
+            users.value.push({
+              userId: newId,
+              username: 'lifeguard_0' + newId,
+              nickName: value,
+              phonenumber: '139884' + Math.floor(10000 + Math.random() * 90000),
+              status: 0,
+              createTime: new Date().toLocaleString()
+            });
+            ElementPlus.ElMessage.success('成功为救生员 ' + value + ' 开启若依系统授权，已绑定默认大屏查看角色。');
+          });
+        };
+
+        // 角色与权限控制
+        const roles = ref([
+          { roleId: 1, roleName: '超级管理员', roleKey: 'admin', roleSort: 1, status: 0 },
+          { roleId: 2, roleName: '海滩救生员', roleKey: 'lifeguard', roleSort: 2, status: 0 }
+        ]);
+
+        // 权限树数据
+        const menuTreeData = [
+          {
+            id: 1,
+            label: '🛡️ RuoYi Cloud 统一管控台',
+            children: [
+              { id: 2, label: '👤 系统管理', children: [{ id: 4, label: '用户管理' }, { id: 5, label: '角色管理' }] },
+              { id: 3, label: '📺 物联网水域监控', children: [{ id: 6, label: '查看4K报警大屏 (iot:alarm:list)' }] },
+              { id: 7, label: '🛠️ 系统工具', children: [{ id: 8, label: '代码生成复印机' }] }
+            ]
+          }
+        ];
+        const defaultProps = { children: 'children', label: 'label' };
+        const defaultCheckedKeys = ref([6]);
+
+        const handleEditRolePermission = (role) => {
+          if (role.roleId === 1) {
+            defaultCheckedKeys.value = [1, 2, 3, 4, 5, 6, 7, 8];
+          } else {
+            defaultCheckedKeys.value = [6];
+          }
+          rolePermissionVisible.value = true;
+        };
+
+        const saveRolePermission = () => {
+          rolePermissionVisible.value = false;
+          ElementPlus.ElMessage.success('权限树配置已下发！Nacos 服务实例已实时热更新鉴权过滤缓存。');
+        };
+
+        // 数据库表与代码生成
+        const dbTables = ref([
+          { tableName: 'sys_device_alarm_data', tableComment: '传感器设备溺水报警报文历史表', className: 'SysDeviceAlarmData', createTime: '2026-06-01 12:49:00' }
+        ]);
+
+        const handlePreviewCode = (row) => {
+          selectedTable.value = row;
+          previewVisible.value = true;
+          photocopying.value = true;
+          setTimeout(() => {
+            photocopying.value = false;
+          }, 1200);
+        };
+
+        const handleGenerateCode = (row) => {
+          const loading = ElementPlus.ElLoading.service({
+            lock: true,
+            text: '🖨️ 若依代码生成复印机正轰鸣打印中，拉取实体类字段...',
+            background: 'rgba(0, 0, 0, 0.7)'
+          });
+          setTimeout(() => {
+            loading.close();
+            ElementPlus.ElMessageBox.alert(
+              '全套微服务 Java 源码、XML、前端 Vue3 报警组件已打包为 [ruoyi-modules-iot.zip]，正在下载！数据库表索引完美保留。',
+              '📦 代码复印机打包完毕',
+              { confirmButtonText: '完成' }
+            );
+          }, 1500);
+        };
+
+        const copyCode = () => {
+          ElementPlus.ElMessage.success('Java 源码已一键复制到剪贴板，可直接粘入您的 IDE 编辑器中！');
+        };
+
+        onMounted(() => {
+          refreshCaptcha();
+        });
+
+        return {
+          isLoggedIn,
+          currentTab,
+          loginLoading,
+          captchaText,
+          loginForm,
+          previewVisible,
+          photocopying,
+          activeCodeTab,
+          rolePermissionVisible,
+          selectedTable,
+          refreshCaptcha,
+          handleLogin,
+          handleLogout,
+          getTabTitle,
+          switchTab,
+          users,
+          handleCreateUser,
+          roles,
+          menuTreeData,
+          defaultProps,
+          defaultCheckedKeys,
+          handleEditRolePermission,
+          saveRolePermission,
+          dbTables,
+          handlePreviewCode,
+          handleGenerateCode,
+          copyCode,
+          mountedMenus,
+          menusTableList,
+          menuDialogVisible,
+          menuForm,
+          saveMenu
+        };
+      }
+    };
+
+    const app = createApp(App);
+    // 注入Element Plus图标
+    for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
+      app.component(key, component);
+    }
+    app.use(ElementPlus).mount('#app');
+  </script>
+</body>
+</html>

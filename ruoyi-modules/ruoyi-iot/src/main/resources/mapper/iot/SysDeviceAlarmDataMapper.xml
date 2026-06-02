@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.iot.mapper.SysDeviceAlarmDataMapper">
+
+    <resultMap type="com.ruoyi.iot.domain.SysDeviceAlarmData" id="SysDeviceAlarmDataResult">
+        <result property="id"          column="id"          />
+        <result property="deviceCode"  column="device_code"  />
+        <result property="waterDepth"  column="water_depth"  />
+        <result property="status"      column="status"      />
+        <result property="battery"     column="battery"     />
+        <result property="reportTime"  column="report_time"  />
+    </resultMap>
+
+    <sql id="selectSysDeviceAlarmDataVo">
+        select id, device_code, water_depth, status, battery, report_time from sys_device_alarm_data
+    </sql>
+
+    <!-- 单条录入 -->
+    <insert id="insert" parameterType="com.ruoyi.iot.domain.SysDeviceAlarmData" useGeneratedKeys="true" keyProperty="id">
+        insert into sys_device_alarm_data(
+            <if test="deviceCode != null and deviceCode != ''">device_code,</if>
+            <if test="waterDepth != null">water_depth,</if>
+            <if test="status != null">status,</if>
+            <if test="battery != null">battery,</if>
+            <if test="reportTime != null">report_time</if>
+        ) values (
+            <if test="deviceCode != null and deviceCode != ''">#{deviceCode},</if>
+            <if test="waterDepth != null">#{waterDepth},</if>
+            <if test="status != null">#{status},</if>
+            <if test="battery != null">#{battery},</if>
+            <if test="reportTime != null">#{reportTime}</if>
+        )
+    </insert>
+
+    <!-- 高频削峰：高性能批量拍入数据库 -->
+    <insert id="insertBatch">
+        insert into sys_device_alarm_data (device_code, water_depth, status, battery, report_time)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (
+                #{item.deviceCode},
+                #{item.waterDepth},
+                #{item.status},
+                #{item.battery},
+                #{item.reportTime}
+            )
+        </foreach>
+    </insert>
+
+    <!-- 
+      干净时间段范围查询极速拉取历史记录 
+      WARNING: 保持 report_time 绝对干净，不准套用 DATE() 等各类破坏索引的函数，以确保 idx_device_time 复合索引完美生效
+    -->
+    <select id="selectHistoryByRange" resultMap="SysDeviceAlarmDataResult">
+        <include refid="selectSysDeviceAlarmDataVo"/>
+        <where>
+            <if test="deviceCode != null and deviceCode != ''">
+                and device_code = #{deviceCode}
+            </if>
+            <if test="beginTime != null">
+                and report_time &gt;= #{beginTime}
+            </if>
+            <if test="endTime != null">
+                and report_time &lt;= #{endTime}
+            </if>
+        </where>
+        order by report_time desc
+    </select>
+
+</mapper>

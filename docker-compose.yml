@@ -1,0 +1,160 @@
+version: '3.8'
+
+services:
+  # Nacos 注册中心与配置中心：园区总大厅
+  ruoyi-nacos:
+    image: nacos/nacos-server:v2.3.2
+    container_name: ruoyi-nacos
+    restart: always
+    environment:
+      - MODE=standalone
+      - JVM_XMS=256m
+      - JVM_XMX=512m
+    ports:
+      - "8848:8848"
+      - "9848:9848"
+      - "9849:9849"
+    depends_on:
+      - ruoyi-mysql
+    networks:
+      - ruoyi-net
+
+  # MySQL 关系型数据库：大运河最终汇流蓄水池
+  ruoyi-mysql:
+    image: mysql:8.0
+    container_name: ruoyi-mysql
+    restart: always
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ruoyi_cloud
+    volumes:
+      - ./docker/mysql/data:/var/lib/mysql
+      - ./db:/docker-entrypoint-initdb.d # 挂载我们第一步生成的 SQL DDL 自动初始化
+    command: --default-authentication-plugin=mysql_native_password
+    networks:
+      - ruoyi-net
+
+  # Redis 临时吸磁大白板：瞬时削峰与高频警报发布中心
+  ruoyi-redis:
+    image: redis:7.0-alpine
+    container_name: ruoyi-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - ./docker/redis/data:/data
+    networks:
+      - ruoyi-net
+
+  # RabbitMQ 救命大运河：IoT Telemetry 流量高并发消能缓冲带
+  ruoyi-rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    container_name: ruoyi-rabbitmq
+    restart: always
+    ports:
+      - "5672:5672"
+      - "15672:15672" # 管理端后台
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    networks:
+      - ruoyi-net
+
+  # ruoyi-gateway 统一网关服务
+  ruoyi-gateway:
+    build:
+      context: ./ruoyi-gateway
+      dockerfile: Dockerfile
+    image: ruoyi/ruoyi-gateway:3.6.8
+    container_name: ruoyi-gateway
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR=ruoyi-nacos:8848
+      - SPRING_CLOUD_NACOS_CONFIG_SERVER_ADDR=ruoyi-nacos:8848
+    depends_on:
+      - ruoyi-nacos
+      - ruoyi-redis
+    networks:
+      - ruoyi-net
+
+  # ruoyi-auth 身份认证服务
+  ruoyi-auth:
+    build:
+      context: ./ruoyi-auth
+      dockerfile: Dockerfile
+    image: ruoyi/ruoyi-auth:3.6.8
+    container_name: ruoyi-auth
+    restart: always
+    ports:
+      - "9200:9200"
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR=ruoyi-nacos:8848
+      - SPRING_CLOUD_NACOS_CONFIG_SERVER_ADDR=ruoyi-nacos:8848
+    depends_on:
+      - ruoyi-nacos
+      - ruoyi-redis
+    networks:
+      - ruoyi-net
+
+  # ruoyi-modules-system 系统管理服务
+  ruoyi-modules-system:
+    build:
+      context: ./ruoyi-modules/ruoyi-system
+      dockerfile: Dockerfile
+    image: ruoyi/ruoyi-modules-system:3.6.8
+    container_name: ruoyi-modules-system
+    restart: always
+    ports:
+      - "9201:9201"
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR=ruoyi-nacos:8848
+      - SPRING_CLOUD_NACOS_CONFIG_SERVER_ADDR=ruoyi-nacos:8848
+    depends_on:
+      - ruoyi-mysql
+      - ruoyi-redis
+      - ruoyi-nacos
+    networks:
+      - ruoyi-net
+
+  # ruoyi-modules-iot 特种微服务节点：物联网水域溺水安全监控核心
+  ruoyi-modules-iot:
+    build:
+      context: ./ruoyi-modules/ruoyi-iot
+      dockerfile: Dockerfile
+    image: ruoyi/ruoyi-modules-iot:3.0.0
+    container_name: ruoyi-modules-iot
+    restart: always
+    ports:
+      - "9800:9800"
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR=ruoyi-nacos:8848
+      - SPRING_CLOUD_NACOS_CONFIG_SERVER_ADDR=ruoyi-nacos:8848
+      - SPRING_DATASOURCE_DRUID_MASTER_URL=jdbc:mysql://ruoyi-mysql:3306/ruoyi_cloud?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=Asia/Shanghai
+      - SPRING_DATASOURCE_DRUID_MASTER_USERNAME=root
+      - SPRING_DATASOURCE_DRUID_MASTER_PASSWORD=root
+      - SPRING_DATA_REDIS_HOST=ruoyi-redis
+      - SPRING_DATA_REDIS_PORT=6379
+      - SPRING_RABBITMQ_HOST=ruoyi-rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=guest
+      - SPRING_RABBITMQ_PASSWORD=guest
+    depends_on:
+      - ruoyi-mysql
+      - ruoyi-redis
+      - ruoyi-rabbitmq
+      - ruoyi-nacos
+    networks:
+      - ruoyi-net
+
+networks:
+  ruoyi-net:
+    driver: bridge
