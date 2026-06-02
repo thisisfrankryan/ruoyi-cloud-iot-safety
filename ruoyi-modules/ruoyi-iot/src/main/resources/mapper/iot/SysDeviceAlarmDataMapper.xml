@@ -34,7 +34,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         )
     </insert>
 
-    <!-- 高频削峰：高性能批量拍入数据库 -->
+    <!-- 批量写入告警历史数据，减少频繁单条插入带来的数据库压力 -->
     <insert id="insertBatch">
         insert into sys_device_alarm_data (device_code, water_depth, status, battery, report_time)
         values
@@ -50,8 +50,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </insert>
 
     <!-- 
-      干净时间段范围查询极速拉取历史记录 
-      WARNING: 保持 report_time 绝对干净，不准套用 DATE() 等各类破坏索引的函数，以确保 idx_device_time 复合索引完美生效
+      历史记录时间范围查询。
+      注意：report_time 索引列保持直接范围比较，避免套用 DATE()/FORMAT() 等函数导致索引失效。
     -->
     <select id="selectHistoryByRange" resultMap="SysDeviceAlarmDataResult">
         <include refid="selectSysDeviceAlarmDataVo"/>

@@ -12,7 +12,7 @@
     <artifactId>ruoyi-modules-iot</artifactId>
 
     <description>
-        ruoyi-modules-iot 物联网溺水报警模块
+        ruoyi-modules-iot 物联网水域安全告警模块
     </description>
 
     <dependencies>
@@ -47,13 +47,13 @@
             <artifactId>ruoyi-common-core</artifactId>
         </dependency>
         
-        <!-- RuoYi Common Redis (已集成 StringRedisTemplate 与高防削峰配置) -->
+        <!-- RuoYi Common Redis (用于实时告警状态缓存) -->
         <dependency>
             <groupId>com.ruoyi</groupId>
             <artifactId>ruoyi-common-redis</artifactId>
         </dependency>
 
-        <!-- Spring Boot Starter AMQP (用于集成 RabbitMQ 救命大运河) -->
+        <!-- Spring Boot Starter AMQP (用于集成 RabbitMQ 告警消息队列) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-amqp</artifactId>

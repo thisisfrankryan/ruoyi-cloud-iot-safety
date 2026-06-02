@@ -25,7 +25,7 @@ public interface SysDeviceAlarmDataMapper {
     int insert(SysDeviceAlarmData alarmData);
 
     /**
-     * 高性能批量放水拍入数据库
+     * 批量写入设备报警记录
      *
      * @param list 待插入的数据集
      * @return 影响行数
@@ -33,11 +33,11 @@ public interface SysDeviceAlarmDataMapper {
     int insertBatch(@Param("list") List<SysDeviceAlarmData> list);
 
     /**
-     * 根据设备编码与干净的时间范围极速拉取历史记录
-     * 保持 report_time 绝对干净，不准套用 DATE() 等各类破坏索引的函数
+     * 根据设备编码与时间范围查询历史记录。
+     * report_time 索引列保持直接范围比较，避免套用 DATE() 等函数导致索引失效。
      *
      * @param deviceCode 设备编码
-     * @param beginTime 开始时间 (精确匹配，不包包装)
+     * @param beginTime 开始时间
      * @param endTime 结束时间
      * @return 历史上报记录列表
      */

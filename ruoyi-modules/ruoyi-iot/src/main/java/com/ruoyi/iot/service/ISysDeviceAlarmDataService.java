@@ -21,7 +21,7 @@ public interface ISysDeviceAlarmDataService {
     int insert(SysDeviceAlarmData alarmData);
 
     /**
-     * 批量拍入设备报警记录
+     * 批量写入设备报警记录
      *
      * @param list 数据集
      * @return 影响行数
@@ -29,7 +29,7 @@ public interface ISysDeviceAlarmDataService {
     int insertBatch(List<SysDeviceAlarmData> list);
 
     /**
-     * 根据设备编码与干净的时间范围极速拉取历史记录
+     * 根据设备编码与时间范围查询历史记录
      *
      * @param deviceCode 设备编码
      * @param beginTime 开始时间

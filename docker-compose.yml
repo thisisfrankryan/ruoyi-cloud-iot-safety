@@ -1,7 +1,5 @@
-version: '3.8'
-
 services:
-  # Nacos 注册中心与配置中心：园区总大厅
+  # Nacos 注册中心与配置中心
   ruoyi-nacos:
     image: nacos/nacos-server:v2.3.2
     container_name: ruoyi-nacos
@@ -19,7 +17,7 @@ services:
     networks:
       - ruoyi-net
 
-  # MySQL 关系型数据库：大运河最终汇流蓄水池
+  # MySQL 关系型数据库：保存告警历史记录与系统业务数据
   ruoyi-mysql:
     image: mysql:8.0
     container_name: ruoyi-mysql
@@ -31,12 +29,12 @@ services:
       MYSQL_DATABASE: ruoyi_cloud
     volumes:
       - ./docker/mysql/data:/var/lib/mysql
-      - ./db:/docker-entrypoint-initdb.d # 挂载我们第一步生成的 SQL DDL 自动初始化
+      - ./db:/docker-entrypoint-initdb.d # 初始化 IoT 告警表结构
     command: --default-authentication-plugin=mysql_native_password
     networks:
       - ruoyi-net
 
-  # Redis 临时吸磁大白板：瞬时削峰与高频警报发布中心
+  # Redis 缓存服务：保存实时活跃告警状态
   ruoyi-redis:
     image: redis:7.0-alpine
     container_name: ruoyi-redis
@@ -49,7 +47,7 @@ services:
     networks:
       - ruoyi-net
 
-  # RabbitMQ 救命大运河：IoT Telemetry 流量高并发消能缓冲带
+  # RabbitMQ 消息队列：承接 IoT 告警报文，解耦接收端与消费端
   ruoyi-rabbitmq:
     image: rabbitmq:3.12-management-alpine
     container_name: ruoyi-rabbitmq
@@ -124,7 +122,7 @@ services:
     networks:
       - ruoyi-net
 
-  # ruoyi-modules-iot 特种微服务节点：物联网水域溺水安全监控核心
+  # ruoyi-modules-iot：物联网水域安全告警核心业务模块
   ruoyi-modules-iot:
     build:
       context: ./ruoyi-modules/ruoyi-iot

@@ -1,12 +1,12 @@
 <template>
   <div class="iot-alarm-dashboard">
-    <!-- 顶部全场总览状态栏 -->
+    <!-- 顶部监控状态栏 -->
     <div :class="['dashboard-header', totalAlarmCount > 0 ? 'alarm-active' : 'all-clear']">
       <div class="header-content">
         <div class="status-indicator">
           <span class="pulse-dot"></span>
           <h1 class="status-title">
-            {{ totalAlarmCount > 0 ? '🚨 十万火急！检测到突发溺水险情' : '🛡️ 全自动水域安全监测大盘 —— 全面安全' }}
+            {{ totalAlarmCount > 0 ? '检测到水域告警事件' : '水域安全监测大屏 - 当前无告警' }}
           </h1>
         </div>
         <div class="realtime-clock">
@@ -24,8 +24,8 @@
       <!-- 快捷操作与模拟控制区 -->
       <section class="control-panel glass-card">
         <div class="panel-header">
-          <h3 class="panel-title">🌊 智能总控调度台</h3>
-          <el-tag size="small" type="info" effect="plain">极速轮询: 500ms</el-tag>
+          <h3 class="panel-title">告警模拟与联调控制台</h3>
+          <el-tag size="small" type="info" effect="plain">轮询间隔: 500ms</el-tag>
         </div>
         <div class="panel-actions">
           <el-button 
@@ -34,7 +34,7 @@
             @click="triggerSimulatedAlarm"
             :disabled="simulationActive"
           >
-            一键模拟突发溺水 (触发红晕)
+            模拟告警事件
           </el-button>
           <el-button 
             type="success" 
@@ -42,7 +42,7 @@
             @click="clearSimulatedAlarm"
             :disabled="!simulationActive"
           >
-            解除模拟报警
+            解除模拟告警
           </el-button>
           <el-button 
             type="primary" 
@@ -50,13 +50,13 @@
             icon="Refresh"
             @click="fetchData"
           >
-            手动强制刷新
+            刷新实时状态
           </el-button>
         </div>
         <div class="panel-desc">
           <span>当前数据获取模式：</span>
           <el-badge :value="simulationActive ? '模拟数据' : '在线轮询'" :type="simulationActive ? 'warning' : 'success'" />
-          <span class="tip-text">（若无真实硬件与后端，系统将自动进入智能模拟状态，展示4K大屏红晕呼吸动效）</span>
+          <span class="tip-text">（无真实硬件数据时，可通过模拟模式验证告警状态与前端展示链路）</span>
         </div>
       </section>
 
@@ -118,9 +118,9 @@
       </section>
     </main>
 
-    <!-- 底部紧急事件滚动播报 -->
+    <!-- 底部告警事件滚动播报 -->
     <footer class="dashboard-footer glass-card">
-      <div class="ticker-label">🚨 滚动警报:</div>
+      <div class="ticker-label">告警播报:</div>
       <div class="ticker-content">
         <transition-group name="ticker" tag="div" class="ticker-wrapper">
           <div 
@@ -128,10 +128,10 @@
             :key="log.id" 
             class="ticker-item"
           >
-            [{{ log.time }}] 设备 {{ log.deviceCode }} 触发溺水警报，水深 {{ log.waterDepth }} 米，请救生员立刻出动！
+            [{{ log.time }}] 设备 {{ log.deviceCode }} 触发溺水警报，水深 {{ log.waterDepth }} 米，请现场人员及时核验。
           </div>
           <div v-if="alarmLogs.length === 0" class="ticker-empty">
-            🟢 当前无历史未处理险情，全域水体平稳。
+            当前无待处理告警事件。
           </div>
         </transition-group>
       </div>
@@ -143,7 +143,7 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { Opportunity, CircleCheck, Refresh } from '@element-plus/icons-vue'
 
-// 1. 初始化数万个传感器在大屏中拟合的代表性核心监测点
+// 1. 初始化代表性监测终端数据。真实环境中可由后端接口或设备接入层提供。
 const devices = ref([
   { deviceCode: 'TERM-BEACH-001', waterDepth: 1.25, status: 0, battery: 88, reportTime: new Date() },
   { deviceCode: 'TERM-BEACH-002', waterDepth: 1.82, status: 0, battery: 92, reportTime: new Date() },
@@ -187,10 +187,10 @@ const formatTime = (time) => {
   return date.toTimeString().split(' ')[0]
 }
 
-// 6. 后端高频请求数据逻辑 (每 0.5 秒)
+// 6. 后端轮询请求逻辑 (每 0.5 秒)
 const fetchData = async () => {
   if (simulationActive.value) {
-    // 模拟数据抖动逻辑：使水深发生极其逼真的微幅物理起伏，更富动态生命力
+    // 模拟数据变化，用于无硬件环境下验证页面展示效果
     devices.value.forEach(d => {
       if (d.status === 0) {
         const delta = (Math.random() - 0.5) * 0.04
@@ -201,7 +201,7 @@ const fetchData = async () => {
     return
   }
 
-  // 正常在线模式：向 RuoYi-Cloud 后端 Controller 发送网络请求
+  // 在线模式：向 RuoYi-Cloud 后端 Controller 发送请求
   try {
     // 此处调用若依通用封装的 request，这里为了展示完整可跑代码，兼容 fetch
     const response = await fetch('/prod-api/iot/alarm/realtime')
@@ -215,20 +215,20 @@ const fetchData = async () => {
         if (hasAlarm && d.status === 0) {
           // 首次从正常切为报警，追加滚动日志记录
           d.status = 1
-          d.waterDepth = parseFloat((d.waterDepth + 0.8).toFixed(2)) // 溺水者挣扎引发局部水深陡增模拟
+          d.waterDepth = parseFloat((d.waterDepth + 0.8).toFixed(2))
           d.reportTime = new Date()
           addAlarmLog(d.deviceCode, d.waterDepth)
         } else if (!hasAlarm && d.status === 1) {
           d.status = 0
         }
         
-        // 模拟水面起伏
+        // 模拟水深数据小幅变化
         const delta = (Math.random() - 0.5) * 0.04
         d.waterDepth = parseFloat((Math.max(0.1, d.waterDepth + delta)).toFixed(2))
       })
     }
   } catch (error) {
-    // 网络不通时的自动兜底模拟：水深物理抖动，保证大屏即使网络离线也“绝对卡不死”
+    // 网络不可用时保持页面可演示，方便本地联调和项目展示
     devices.value.forEach(d => {
       const delta = (Math.random() - 0.5) * 0.02
       d.waterDepth = parseFloat((Math.max(0.1, d.waterDepth + delta)).toFixed(2))
@@ -252,11 +252,11 @@ const addAlarmLog = (deviceCode, depth) => {
   }
 }
 
-// 8. 控制面板：一键模拟溺水险情 (激活 4K 巨幅红晕闪亮呼吸灯特效)
+// 8. 控制面板：模拟溺水告警事件
 const triggerSimulatedAlarm = () => {
   simulationActive.value = true
   
-  // 随机挑选两个不同监控点爆表溺水
+  // 选择两个监控点模拟告警
   const target1 = devices.value[2] // TERM-POOL-A1
   const target2 = devices.value[4] // TERM-SEA-DEEP01
   
@@ -299,7 +299,7 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* 全局背景及字体设置：太空 cyber 深蓝色调 */
+/* 全局背景及字体设置：深色监控大屏风格 */
 .iot-alarm-dashboard {
   background-color: #0b1120;
   min-height: 100vh;
@@ -311,7 +311,7 @@ onUnmounted(() => {
   box-sizing: border-box;
 }
 
-/* 玻璃态卡片统一视觉规范 (Glassmorphism) */
+/* 玻璃态卡片统一视觉规范 */
 .glass-card {
   background: rgba(15, 23, 42, 0.6);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -321,7 +321,7 @@ onUnmounted(() => {
   transition: all 0.3s ease;
 }
 
-/* 顶部全场总览状态栏 */
+/* 顶部监控状态栏 */
 .dashboard-header {
   border-radius: 16px;
   padding: 20px 30px;
@@ -331,13 +331,13 @@ onUnmounted(() => {
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* 全域全面安全状态：科幻幽绿 */
+/* 正常状态 */
 .all-clear {
   background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.3) 100%);
   border-left: 8px solid #10b981;
 }
 
-/* 十万火急异常状态：暴血红晕 */
+/* 告警状态 */
 .alarm-active {
   background: linear-gradient(135deg, rgba(220, 38, 38, 0.3) 0%, rgba(185, 28, 28, 0.55) 100%);
   border-left: 8px solid #dc2626;

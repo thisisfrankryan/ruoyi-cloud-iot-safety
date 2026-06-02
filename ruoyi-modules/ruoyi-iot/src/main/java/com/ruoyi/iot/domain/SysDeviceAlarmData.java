@@ -28,10 +28,10 @@ public class SysDeviceAlarmData implements Serializable {
     /** 设备编码 */
     private String deviceCode;
 
-    /** 当前水面深度(米)，高精度BigDecimal精度雕刻刀 */
+    /** 当前水面深度(米)，使用 BigDecimal 保留数值精度 */
     private BigDecimal waterDepth;
 
-    /** 异常状态标记：0-正常状态，1-十万火急溺水报警 */
+    /** 异常状态标记：0-正常状态，1-溺水报警 */
     private Integer status;
 
     /** 设备剩余电量百分比 */

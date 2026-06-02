@@ -7,12 +7,12 @@ metadata:
     app: ruoyi-modules-iot
     tier: microservice
 spec:
-  # HPA 绑定针对的微服务 Deploy 目标
+  # HPA 绑定的微服务 Deployment
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
     name: ruoyi-modules-iot
-  # 弹性克隆副本数范围：常驻 3 尊真身分流，暴雨期最高扩容到 6 个分身抗洪
+  # 副本数范围：默认 3 个实例，负载升高时最多扩容到 6 个实例
   minReplicas: 3
   maxReplicas: 6
   metrics:
@@ -21,18 +21,18 @@ spec:
         name: cpu
         target:
           type: Utilization
-          # 核心削峰策略：当该微服务平均 CPU 占用率超过 60% 时自动唤醒克隆流程
+          # 当 IoT 微服务平均 CPU 使用率超过 60% 时触发扩容
           averageUtilization: 60
-  # 智能防震荡扩缩容行为调校 (Behavior Policies)
+  # 扩缩容行为配置，降低频繁抖动
   behavior:
     scaleUp:
-      stabilizationWindowSeconds: 0 # 突发洪峰一微秒都不要等，无冷却窗口，立刻开始复制扩容
+      stabilizationWindowSeconds: 0 # 扩容不设置稳定窗口，便于快速响应流量上升
       policies:
         - type: Percent
-          value: 100               # 瞬时可扩容 100% 实例，直接翻倍
-          periodSeconds: 15        # 每 15 秒重新评估，确保秒级抗下海啸流量
+          value: 100               # 每次最多按当前实例数 100% 扩容
+          periodSeconds: 15        # 每 15 秒重新评估一次
     scaleDown:
-      stabilizationWindowSeconds: 300 # 险情退去后设定 5 分钟 (300秒) 缓慢冷却，严禁缩容震荡，保证系统平稳过渡
+      stabilizationWindowSeconds: 300 # 缩容设置 5 分钟稳定窗口，避免短时间内频繁伸缩
       policies:
         - type: Percent
           value: 10

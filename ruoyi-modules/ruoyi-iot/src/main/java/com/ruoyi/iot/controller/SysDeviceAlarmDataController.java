@@ -34,7 +34,7 @@ public class SysDeviceAlarmDataController {
     private final StringRedisTemplate redisTemplate;
 
     /**
-     * 根据设备编码与干净的时间范围极速拉取历史记录 (Nginx 负载均衡分流进入)
+     * 根据设备编码与时间范围查询历史告警记录。
      *
      * @param deviceCode 设备编码
      * @param beginTime 开始时间 (ISO-8601 格式，如: 2026-06-01T12:00:00)
@@ -52,8 +52,8 @@ public class SysDeviceAlarmDataController {
     }
 
     /**
-     * 大屏专用极速实时数据轮询接口
-     * 从 Redis 临时吸磁大白板直接获取 10 秒内产生过溺水警报的设备列表及其状态
+     * 告警大屏实时轮询接口。
+     * 从 Redis ZSET 获取当前仍处于活跃告警状态的设备列表。
      *
      * @return 统一响应封装体 R 包裹的异常设备 Map
      */
@@ -65,7 +65,7 @@ public class SysDeviceAlarmDataController {
             long now = System.currentTimeMillis();
             // 1. 自动擦除已过期的报警设备记录 (清除 score 介于 0 到当前时间戳的过期记录)
             redisTemplate.opsForZSet().removeRangeByScore(activeAlarmKey, 0, now);
-            // 2. 拉取所有仍处于活跃警报状态的设备 (score 介于当前时间戳到正无穷)
+            // 2. 拉取所有仍处于活跃告警状态的设备 (score 介于当前时间戳到正无穷)
             Set<String> activeDevices = redisTemplate.opsForZSet().rangeByScore(activeAlarmKey, now, Double.MAX_VALUE);
             if (activeDevices != null && !activeDevices.isEmpty()) {
                 for (String deviceCode : activeDevices) {
