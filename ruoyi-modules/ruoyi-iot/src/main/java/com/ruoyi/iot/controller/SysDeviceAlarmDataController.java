@@ -61,18 +61,21 @@ public class SysDeviceAlarmDataController {
     public R<Map<String, String>> getRealtimeAlarms() {
         Map<String, String> activeAlarms = new HashMap<>();
         try {
-            // 获取以 alarm:device: 开头的所有活跃警报 Key
-            Set<String> keys = redisTemplate.keys("alarm:device:*");
-            if (keys != null && !keys.isEmpty()) {
-                for (String key : keys) {
-                    String deviceCode = key.substring("alarm:device:".length());
-                    String statusValue = redisTemplate.opsForValue().get(key);
-                    activeAlarms.put(deviceCode, statusValue);
+            String activeAlarmKey = "alarm:active_zset";
+            long now = System.currentTimeMillis();
+            // 1. 自动擦除已过期的报警设备记录 (清除 score 介于 0 到当前时间戳的过期记录)
+            redisTemplate.opsForZSet().removeRangeByScore(activeAlarmKey, 0, now);
+            // 2. 拉取所有仍处于活跃警报状态的设备 (score 介于当前时间戳到正无穷)
+            Set<String> activeDevices = redisTemplate.opsForZSet().rangeByScore(activeAlarmKey, now, Double.MAX_VALUE);
+            if (activeDevices != null && !activeDevices.isEmpty()) {
+                for (String deviceCode : activeDevices) {
+                    activeAlarms.put(deviceCode, "1");
                 }
             }
         } catch (Exception e) {
-            log.error("高频轮询 Redis 实时警报异常: ", e);
+            log.error("高频轮询 Redis ZSET 实时警报异常: ", e);
         }
         return R.ok(activeAlarms);
     }
+
 }
